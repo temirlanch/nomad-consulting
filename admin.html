@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Рабочая панель — Nomad Consulting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/admin.css">
+</head>
+<body class="admin">
+
+<!-- LOGIN -->
+<div class="login" id="login-screen" hidden>
+  <form id="login-form">
+    <a class="brand" href="/"><span class="mark">NC</span><span><b>Nomad Consulting</b><small data-t="panel">Рабочая панель</small></span></a>
+    <h1 data-t="loginTitle">Вход для сотрудников</h1>
+    <p data-t="loginSub">Используйте почту и пароль, которые выдал администратор.</p>
+    <label class="field"><span data-t="email">Почта</span><input id="l-email" type="email" autocomplete="username" required></label>
+    <label class="field"><span data-t="password">Пароль</span><input id="l-pass" type="password" autocomplete="current-password" required></label>
+    <div class="err" id="l-err" hidden></div>
+    <button class="btn primary" type="submit" id="l-btn" data-t="signIn">Войти</button>
+  </form>
+</div>
+
+<!-- SETUP NOTICE -->
+<div class="login" id="setup-screen" hidden>
+  <div class="panel" style="max-width:520px;padding:28px;display:flex;flex-direction:column;gap:12px">
+    <h1 style="font-family:var(--font-display);font-weight:500;font-size:22px">База ещё не подключена</h1>
+    <p style="color:var(--muted)">Откройте файл <b>assets/config.js</b> и впишите Project URL и anon key из Supabase (Project Settings → API). После загрузки файла на GitHub панель заработает.</p>
+    <a class="btn" href="/">На главную</a>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" hidden>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="mark">NC</span><span><b>Nomad Consulting</b><small data-t="panel">Рабочая панель</small></span></a>
+    <nav class="tabs" id="tabs">
+      <a href="#overview" data-v="overview" data-t="overview">Обзор</a>
+      <a href="#applications" data-v="applications"><span data-t="applications">Заявки с сайта</span><span class="badge" id="app-badge" hidden>0</span></a>
+      <a href="#students" data-v="students" data-t="students">Студенты</a>
+      <a href="#universities" data-v="universities" data-t="universities">Университеты</a>
+      <a href="#notes" data-v="notes" data-t="notes">Заметки</a>
+    </nav>
+    <div class="lang" role="group" aria-label="Язык">
+      <button type="button" data-lang="ky" aria-pressed="false">КЫР</button>
+      <button type="button" data-lang="ru" aria-pressed="true">РУС</button>
+    </div>
+    <div class="who"><span id="who-email"></span><button class="icon-btn" id="logout" data-t="signOut">Выйти</button></div>
+  </div>
+</header>
+
+<main class="wrap main">
+  <div class="banner" id="banner" hidden></div>
+
+  <section id="v-overview">
+    <div class="view-head">
+      <div><h1 data-t="heroTitle">От заявки до визы</h1><p data-t="heroSub">Каждый студент и каждый документ под контролем.</p></div>
+      <button class="btn primary sm" data-add-student data-t="addStudent">Добавить студента</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><span data-t="total">Всего студентов</span><strong id="st-total">0</strong></div>
+      <div class="stat"><span data-t="awaitingDocs">Ждут документы</span><strong id="st-docs">0</strong></div>
+      <div class="stat hl"><span data-t="acceptedN">Приняты</span><strong id="st-acc">0</strong></div>
+      <div class="stat"><span data-t="inVisa">Оформляют визу</span><strong id="st-visa">0</strong></div>
+    </div>
+    <div class="pipe" id="pipe"></div>
+    <div class="chips" id="prog-chips"></div>
+    <div class="cols">
+      <div class="panel">
+        <div class="panel-h"><h2 data-t="admissionList">Список поступающих</h2><a class="btn xs" href="#students" data-t="viewAll">Все</a></div>
+        <ul class="rows" id="ov-list"></ul>
+        <div class="empty" id="ov-empty" hidden></div>
+      </div>
+      <div class="side">
+        <div class="panel">
+          <div class="panel-h"><h2 data-t="newApps">Новые заявки с сайта</h2><a class="btn xs" href="#applications" data-t="viewAll">Все</a></div>
+          <ul class="apps" id="ov-apps"></ul>
+          <div class="empty" id="ov-apps-empty" data-t="noNewApps">Новых заявок нет</div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h2 data-t="nextContacts">Ближайшие контакты</h2></div>
+          <ul class="next" id="next-list"></ul>
+          <div class="empty" id="next-empty" data-t="noContacts">Запланированных контактов нет</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="v-applications" hidden>
+    <div class="view-head"><div><h1 data-t="applications">Заявки с сайта</h1><p data-t="appsSub">Заявки из формы на главной странице. Создайте из заявки студента или отметьте её обработанной.</p></div></div>
+    <div class="chips" id="app-chips"></div>
+    <div class="panel"><ul class="apps" id="apps-list"></ul><div class="empty" id="apps-empty" hidden data-t="noApps">Заявок пока нет</div></div>
+  </section>
+
+  <section id="v-students" hidden>
+    <div class="view-head">
+      <div><h1 data-t="students">Студенты</h1><p id="stu-count"></p></div>
+      <button class="btn sm" id="export-csv" data-t="exportCsv">Выгрузить в Excel (CSV)</button>
+      <button class="btn primary sm" data-add-student data-t="addStudent">Добавить студента</button>
+    </div>
+    <div class="tools">
+      <input id="q" type="search" data-tp="search" placeholder="Поиск по имени или телефону">
+      <select id="f-status" aria-label="Статус"></select>
+      <select id="f-prog" aria-label="Программа"></select>
+      <select id="f-uni" aria-label="Университет"></select>
+    </div>
+    <div class="panel tbl-wrap">
+      <table>
+        <thead><tr><th data-t="fName">ФИО</th><th data-t="fProgram">Программа</th><th data-t="fUni">Университет</th><th data-t="fStatus">Статус</th><th data-t="documents">Документы</th><th data-t="fNext">Контакт</th></tr></thead>
+        <tbody id="stu-tbody"></tbody>
+      </table>
+      <div class="empty" id="stu-empty" hidden></div>
+    </div>
+  </section>
+
+  <section id="v-universities" hidden>
+    <div class="view-head">
+      <div><h1 data-t="universities">Университеты</h1><p data-t="uniSub">Вузы-партнёры, сроки подачи и контакты.</p></div>
+      <button class="btn primary sm" id="add-uni" data-t="addUni">Добавить университет</button>
+    </div>
+    <div class="unis" id="uni-grid"></div>
+    <div class="empty panel" id="uni-empty" hidden data-t="uniEmpty">Университетов пока нет.</div>
+  </section>
+
+  <section id="v-notes" hidden>
+    <div class="view-head"><div><h1 data-t="notes">Заметки</h1><p data-t="notesSub">Общие заметки команды: договорённости, напоминания, контакты.</p></div></div>
+    <form class="note-new" id="note-form">
+      <textarea id="note-text" data-tp="notePh" placeholder="Например: до 15 декабря получить у NJCIT список документов на весенний набор"></textarea>
+      <div><button class="btn primary sm" type="submit" data-t="addNote">Добавить заметку</button></div>
+    </form>
+    <div class="notes" id="notes-list"></div>
+    <div class="empty" id="notes-empty" hidden data-t="notesEmpty">Заметок пока нет.</div>
+  </section>
+</main>
+</div>
+
+<!-- Student drawer -->
+<dialog class="drawer" id="stu-dlg">
+  <form id="stu-form">
+    <div class="d-head"><h2 id="stu-title"></h2><button type="button" class="icon-btn" data-close aria-label="Закрыть">✕</button></div>
+    <div class="d-body">
+      <div><span class="lg" data-t="fStatus">Статус</span><div class="stepper" id="stu-stepper"></div></div>
+      <fieldset>
+        <legend data-t="gStudent">Студент</legend>
+        <label class="full"><span data-t="fName">ФИО</span><input id="s-name" required autocomplete="off"></label>
+        <label><span data-t="fPhone">Телефон</span><input id="s-phone" type="tel" autocomplete="off"></label>
+        <label><span data-t="fParent">Телефон родителя</span><input id="s-parent" type="tel" autocomplete="off"></label>
+        <label><span data-t="fBirth">Дата рождения</span><input id="s-birth" type="date"></label>
+        <label><span data-t="fPassExp">Паспорт действует до</span><input id="s-passexp" type="date"></label>
+      </fieldset>
+      <fieldset>
+        <legend data-t="gProgram">Поступление</legend>
+        <label><span data-t="fProgram">Программа</span><select id="s-program"></select></label>
+        <label><span data-t="fIntake">Набор</span><input id="s-intake" data-tp="intakePh" placeholder="Сентябрь 2027"></label>
+        <label class="full"><span data-t="fUni">Университет</span><select id="s-uni"></select></label>
+        <label><span data-t="fMajor">Специальность</span><input id="s-major"></label>
+        <label><span data-t="fScholarship">Стипендия</span><select id="s-schol"></select></label>
+      </fieldset>
+      <div><span class="lg" data-t="documents">Документы</span><div class="checks" id="s-docs"></div></div>
+      <fieldset>
+        <legend data-t="gNext">Следующий шаг</legend>
+        <label><span data-t="fNextDate">Дата контакта</span><input id="s-nextdate" type="date"></label>
+        <label><span data-t="fNextAction">Что сделать</span><input id="s-nextaction" data-tp="nextPh" placeholder="Позвонить родителям про медсправку"></label>
+        <label class="full"><span data-t="fNote">Заметка</span><textarea id="s-note"></textarea></label>
+      </fieldset>
+      <div id="hist-wrap" hidden><span class="lg" data-t="history">История статусов</span><ul class="hist" id="s-hist"></ul></div>
+    </div>
+    <div class="d-foot">
+      <div class="sp" id="del-zone"></div>
+      <button type="button" class="btn sm" data-close data-t="cancel">Отмена</button>
+      <button type="submit" class="btn primary sm" id="stu-save" data-t="save">Сохранить</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- University drawer -->
+<dialog class="drawer" id="uni-dlg">
+  <form id="uni-form">
+    <div class="d-head"><h2 id="uni-title"></h2><button type="button" class="icon-btn" data-close aria-label="Закрыть">✕</button></div>
+    <div class="d-body">
+      <fieldset>
+        <label class="full"><span data-t="uName">Название</span><input id="u-name" required autocomplete="off"></label>
+        <label><span data-t="uCity">Город</span><input id="u-city"></label>
+        <label><span data-t="uDeadline">Дедлайн подачи</span><input id="u-deadline" type="date"></label>
+        <label class="full"><span data-t="uPrograms">Программы</span><input id="u-programs" data-tp="uProgPh" placeholder="Языковой год, 1+4, 3+2"></label>
+        <label class="full"><span data-t="uContact">Контакт в вузе</span><input id="u-contact" data-tp="uContactPh" placeholder="Имя, WeChat, e-mail"></label>
+        <label class="full"><span data-t="fNote">Заметка</span><textarea id="u-note"></textarea></label>
+      </fieldset>
+    </div>
+    <div class="d-foot">
+      <div class="sp" id="udel-zone"></div>
+      <button type="button" class="btn sm" data-close data-t="cancel">Отмена</button>
+      <button type="submit" class="btn primary sm" data-t="save">Сохранить</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="assets/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="assets/admin.js"></script>
+</body>
+</html>
